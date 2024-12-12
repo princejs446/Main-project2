@@ -12,7 +12,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late Future<List<NewsApiModel>> futureNews;
-  String selectedCategory = 'business'; // Default category
+  String selectedCategory = 'business'; 
   TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
@@ -25,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
  void _updateCategory(String category) {
   setState(() {
     selectedCategory = category;
-    futureNews = getNews(category: selectedCategory); // Fetch news for the selected category
+    futureNews = getNews(category: selectedCategory); 
   });
 }
 
@@ -60,7 +60,7 @@ Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
               controller: _searchController,
-              onChanged: _updateSearchQuery,  // Update search query dynamically
+              onChanged: _updateSearchQuery,  
               decoration: InputDecoration(
                 labelText: 'Search News',
                 border: OutlineInputBorder(),
@@ -235,7 +235,7 @@ class NewsSearchDelegate extends SearchDelegate {
       } else {
         List<NewsApiModel> articles = snapshot.data!;
 
-        // Display the articles for the selected category
+        
         return ListView.builder(
           itemCount: articles.length,
           itemBuilder: (context, index) {
