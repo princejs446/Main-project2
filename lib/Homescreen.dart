@@ -22,12 +22,13 @@ class _HomeScreenState extends State<HomeScreen> {
     futureNews = getNews(category: selectedCategory);
   }
 
-  void _updateCategory(String category) {
-    setState(() {
-      selectedCategory = category;
-      futureNews = getNews(category: selectedCategory);
-    });
-  }
+ void _updateCategory(String category) {
+  setState(() {
+    selectedCategory = category;
+    futureNews = getNews(category: selectedCategory); // Fetch news for the selected category
+  });
+}
+
 
   void _updateSearchQuery(String query) {
     setState(() {
@@ -43,18 +44,17 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildCategoryButton('Business', Icons.business, 'business'),
-                _buildCategoryButton(
-                    'Entertainment', Icons.movie, 'entertainment'),
-                _buildCategoryButton('Sports', Icons.sports, 'sports'),
-              ],
-            ),
-          ),
+Padding(
+  padding: const EdgeInsets.all(8.0),
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    children: [
+      _buildCategoryButton('Business', Icons.business, 'business'),
+      _buildCategoryButton('Entertainment', Icons.movie, 'entertainment'),
+      _buildCategoryButton('Sports', Icons.sports, 'sports'),
+    ],
+  ),
+),
           // TextField for search
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -168,21 +168,28 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCategoryButton(
-      String label, IconData icon, String category) {
-    return GestureDetector(
-      onTap: () => _updateCategory(category),
-      child: Column(
-        children: [
-          Icon(icon, size: 30, color: selectedCategory == category ? Colors.blue : Colors.grey),
-          const SizedBox(height: 4),
-          Text(label,
-              style: TextStyle(
-                  color: selectedCategory == category ? Colors.blue : Colors.grey)),
-        ],
-      ),
-    );
-  }
+Widget _buildCategoryButton(String label, IconData icon, String category) {
+  return GestureDetector(
+    onTap: () => _updateCategory(category),
+    child: Column(
+      children: [
+        Icon(
+          icon,
+          size: 30,
+          color: selectedCategory == category ? Colors.blue : Colors.grey,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            color: selectedCategory == category ? Colors.blue : Colors.grey,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 }
 
 class NewsSearchDelegate extends SearchDelegate {
@@ -215,56 +222,62 @@ class NewsSearchDelegate extends SearchDelegate {
 
   @override
   Widget buildResults(BuildContext context) {
-    return FutureBuilder<List<NewsApiModel>>(
-      future: futureNews,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(child: Text('No articles found.'));
-        } else {
-          final results = snapshot.data!.where((article) {
-            return article.title.toLowerCase().contains(query.toLowerCase()) ||
-                article.description.toLowerCase().contains(query.toLowerCase());
-          }).toList();
+    return Expanded(
+  child: FutureBuilder<List<NewsApiModel>>(
+    future: futureNews,
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(child: CircularProgressIndicator());
+      } else if (snapshot.hasError) {
+        return Center(child: Text('Error: ${snapshot.error}'));
+      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+        return const Center(child: Text('No articles found.'));
+      } else {
+        List<NewsApiModel> articles = snapshot.data!;
 
-          if (results.isEmpty) {
-            return const Center(child: Text('No articles match your search.'));
-          }
-
-          return ListView.builder(
-            itemCount: results.length,
-            itemBuilder: (context, index) {
-              final article = results[index];
-              return Card(
-                margin: const EdgeInsets.all(8.0),
-                child: ListTile(
-                  leading: article.urlToImage.isNotEmpty
-                      ? Image.network(article.urlToImage,
-                          width: 50, height: 50, fit: BoxFit.cover)
-                      : const Icon(Icons.image_not_supported),
-                  title: Text(article.title,
-                      maxLines: 2, overflow: TextOverflow.ellipsis),
-                  subtitle: Text(article.description,
-                      maxLines: 2, overflow: TextOverflow.ellipsis),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            ArticleDetailPage(article: article),
-                      ),
-                    );
-                  },
+        // Display the articles for the selected category
+        return ListView.builder(
+          itemCount: articles.length,
+          itemBuilder: (context, index) {
+            final article = articles[index];
+            return Card(
+              margin: const EdgeInsets.all(8.0),
+              child: ListTile(
+                leading: article.urlToImage.isNotEmpty
+                    ? Image.network(
+                        article.urlToImage,
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                      )
+                    : const Icon(Icons.image_not_supported),
+                title: Text(
+                  article.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              );
-            },
-          );
-        }
-      },
-    );
+                subtitle: Text(
+                  article.description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ArticleDetailPage(article: article),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        );
+      }
+    },
+  ),
+);
+
   }
 
   @override
